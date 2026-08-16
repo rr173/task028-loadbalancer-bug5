@@ -116,7 +116,7 @@ func (a *API) removeNode(w http.ResponseWriter, r *http.Request) {
 // healthRequest 是设置健康状态的请求体。
 type healthRequest struct {
 	ID      string `json:"id"`
-	Healthy bool   `json:"healthy"`
+	Healthy *bool  `json:"healthy"`
 }
 
 func (a *API) setHealth(w http.ResponseWriter, r *http.Request) {
@@ -125,7 +125,11 @@ func (a *API) setHealth(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, http.StatusBadRequest, outcome{OK: false, Error: err.Error()})
 		return
 	}
-	if err := a.store.SetHealth(req.ID, req.Healthy); err != nil {
+	if req.Healthy == nil {
+		writeJSON(w, http.StatusBadRequest, outcome{OK: false, Error: "healthy 字段不能为空"})
+		return
+	}
+	if err := a.store.SetHealth(req.ID, *req.Healthy); err != nil {
 		writeJSON(w, http.StatusBadRequest, outcome{OK: false, Error: err.Error()})
 		return
 	}
